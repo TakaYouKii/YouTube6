@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".presentation.pleylists.PlaylistsFragment">
+
+    <include
+        android:id="@+id/no_internet"
+        layout="@layout/internet_connection" />
+
+    <ProgressBar
+        android:id="@+id/loading"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:elevation="2dp"
+        android:visibility="gone"
+        android:indeterminateTint="@color/black"
+       android:layout_gravity="center"/>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rv_playlists"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+        tools:listitem="@layout/playlist_items" />
+
+</FrameLayout>
