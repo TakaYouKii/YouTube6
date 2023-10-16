@@ -10,6 +10,7 @@ import com.example.youtube6_3.core.network.RetrofitClient
 import com.example.youtube6_3.core.utils.Status
 import com.example.youtube6_3.databinding.FragmentPlaylistsBinding
 import com.example.youtube6_3.domain.repositoty.Repository
+import com.example.youtube6_3.utils.InternetConnection
 
 
 class PlaylistsFragment : Fragment() {
@@ -30,7 +31,23 @@ class PlaylistsFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         initLiveData()
+        initConnection()
 
+    }
+
+    private fun initConnection() {
+            InternetConnection(requireContext()).observe(viewLifecycleOwner) { isConnection ->
+                binding.noInternet.btnTryAgain.setOnClickListener {
+                if (isConnection) {
+                    binding.noInternet.root.visibility = View.GONE
+                    initLiveData()
+                }
+            }
+
+                if (!isConnection)
+                    binding.noInternet.root.visibility = View.VISIBLE
+
+            }
     }
 
     private fun initLiveData() {
