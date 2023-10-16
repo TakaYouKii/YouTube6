@@ -1,86 +1,85 @@
 package com.example.youtube6_3.presentation.pleylists
 
+import android.annotation.SuppressLint
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.setFragmentResult
+import androidx.navigation.fragment.findNavController
+import com.example.youtube6_3.R
+import com.example.youtube6_3.core.network.RemoteDataSource
 import com.example.youtube6_3.core.network.RetrofitClient
-import com.example.youtube6_3.core.utils.Status
+import com.example.youtube6_3.data.model.PlaylistsModel
 import com.example.youtube6_3.databinding.FragmentPlaylistsBinding
 import com.example.youtube6_3.domain.repositoty.Repository
 import com.example.youtube6_3.utils.InternetConnection
 
 
 class PlaylistsFragment : Fragment() {
-
     private lateinit var binding: FragmentPlaylistsBinding
-
-    private val playlistsViewModel = PlaylistsViewModel(Repository(RetrofitClient().createApiService()))
-    private val adapter = PlaylistsAdapter()
-
+    private val retrofitClient = RetrofitClient().createApiService()
+    private val remoteDataSource = RemoteDataSource(retrofitClient)
+    private val repository=Repository(remoteDataSource)
+    private val playerListViewModel = PlaylistsViewModel(repository)
+    private val adapter = PlaylistsAdapter(this::onClickItem)
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? {
-        binding = FragmentPlaylistsBinding.inflate(layoutInflater)
+        savedInstanceState: Bundle?,
+    ): View {
+        binding = FragmentPlaylistsBinding.inflate(inflater, container, false)
         return binding.root
     }
 
+    @SuppressLint("ResourceType")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         initLiveData()
-        initConnection()
-
+        initListeners()
+        initView()
     }
 
-    private fun initConnection() {
-            InternetConnection(requireContext()).observe(viewLifecycleOwner) { isConnection ->
-                binding.noInternet.btnTryAgain.setOnClickListener {
-                if (isConnection) {
-                    binding.noInternet.root.visibility = View.GONE
+    private fun initView() {
+        playerListViewModel.getPlaylists()
+    }
+
+    private fun initListeners() {
+        InternetConnection(requireContext()).observe(viewLifecycleOwner){isConected->
+            if (!isConected){
+                binding.noInternet.root.visibility=View.VISIBLE
+            }
+            binding.noInternet.btnTryAgain.setOnClickListener {
+                if (isConected){
+                    binding.noInternet.root.visibility=View.GONE
                     initLiveData()
                 }
             }
-
-                if (!isConnection)
-                    binding.noInternet.root.visibility = View.VISIBLE
-
-            }
+        }
     }
-
     private fun initLiveData() {
-        playlistsViewModel.getPlaylists().observe(viewLifecycleOwner) { resource ->
-            when (resource.status) {
-                Status.SUCCESS -> {
-                    resource.data?.let { adapter.addPlaylist(it.items) }
-                    binding.rvPlaylists.adapter = adapter
-                    playlistsViewModel.loading.value = false
-                }
-
-                Status.ERROR -> {
-                    if (resource.data == null) {
-                        Toast.makeText(requireContext(), "Данные не пришли", Toast.LENGTH_SHORT)
-                            .show()
-                    }
-                    playlistsViewModel.loading.value = false
-                }
-
-                Status.LOADING -> {
-                    playlistsViewModel.loading.value = true
-                }
+        playerListViewModel.playlists.observe(viewLifecycleOwner){
+            adapter.addPlaylist(it.items)
+            binding.rvPlaylists.adapter = adapter
+        }
+        playerListViewModel.loading.observe(viewLifecycleOwner){loading->
+            if (loading){
+                binding.loading.visibility=View.VISIBLE
+            }
+            else{
+                binding.loading.visibility=View.GONE
             }
         }
-
-        playlistsViewModel.loading.observe(requireActivity()) {
-            if (it) {
-                binding.loading.visibility = View.VISIBLE
-            } else {
-                binding.loading.visibility = View.GONE
-            }
+        playerListViewModel.error.observe(viewLifecycleOwner){
+            Toast.makeText(requireContext(), "error", Toast.LENGTH_SHORT).show()
         }
     }
-
-
+    private fun onClickItem(playlistsModel: PlaylistsModel.Item){
+        setFragmentResult("key1", bundleOf("key" to playlistsModel))
+        findNavController().navigate(R.id.playlistItemsFragment)
+        Log.e("ololo", "onClickItem: $playlistsModel", )
+    }
 }

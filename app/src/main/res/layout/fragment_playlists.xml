@@ -8,7 +8,9 @@
 
     <include
         android:id="@+id/no_internet"
-        layout="@layout/internet_connection" />
+        layout="@layout/internet_connection"
+        android:visibility="gone"
+        />
 
     <ProgressBar
         android:id="@+id/loading"

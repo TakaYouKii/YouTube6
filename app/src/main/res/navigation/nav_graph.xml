@@ -10,4 +10,8 @@
         android:name="com.example.youtube6_3.presentation.pleylists.PlaylistsFragment"
         android:label="fragment_playlists"
         tools:layout="@layout/fragment_playlists" />
+    <fragment
+        android:id="@+id/playlistItemsFragment"
+        android:name="com.example.youtube6_3.presentation.playlist_items.PlaylistItemsFragment"
+        android:label="PlaylistItemsFragment" />
 </navigation>

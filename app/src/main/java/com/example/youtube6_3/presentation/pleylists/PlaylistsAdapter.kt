@@ -8,7 +8,7 @@ import com.bumptech.glide.Glide
 import com.example.youtube6_3.data.model.PlaylistsModel
 import com.example.youtube6_3.databinding.PlaylistItemsBinding
 
-class PlaylistsAdapter(): RecyclerView.Adapter<PlaylistsAdapter.PlaylistViewHolder>(){
+class PlaylistsAdapter(private val onClick:(playlistItem:PlaylistsModel.Item)->Unit): RecyclerView.Adapter<PlaylistsAdapter.PlaylistViewHolder>(){
 
     private var list = mutableListOf<PlaylistsModel.Item>()
 
@@ -31,12 +31,15 @@ class PlaylistsAdapter(): RecyclerView.Adapter<PlaylistsAdapter.PlaylistViewHold
 
 
 
-    class PlaylistViewHolder(private val binding: PlaylistItemsBinding): RecyclerView.ViewHolder(binding.root){
+  inner  class PlaylistViewHolder(private val binding: PlaylistItemsBinding): RecyclerView.ViewHolder(binding.root){
         fun bind(playerListModel:PlaylistsModel.Item){
             with(binding){
                 tvTitle.text=playerListModel.snippet.title
                 tvCount.text=playerListModel.contentDetails.itemCount.toString()+" video series"
                 Glide.with(image).load(playerListModel.snippet.thumbnails.default.url).into(image)
+                itemView.setOnClickListener {
+                    onClick(playerListModel)
+                }
             }
         }
     }
